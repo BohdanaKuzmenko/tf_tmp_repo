@@ -1,0 +1,17 @@
+{
+  "project_id": {
+    "type": "str",
+    "required": true,
+    "help": "Project id"
+  },
+  "region": {
+    "type": "str",
+    "required": false,
+    "help": "Project region"
+  },
+  "zone": {
+    "type": "str",
+    "required": false,
+    "help": "Project zone"
+  }
+}
