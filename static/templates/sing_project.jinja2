@@ -1,0 +1,18 @@
+module "{{ project_id }}" {
+
+  source              = "../terraform/modules/project-factory"
+  parent              = "folders/{{ folder_id }}"
+  name                = "{{ project_id }}"
+  {%if auto_create_network == true %}
+  auto_create_network =  true
+  {% endif %}
+  billing_account     = "{{ billing_account }}"
+  {% if account_groups == true %}
+  owners              = ["group:{{ project_id }}-AccountOwners@{{domain}}"]
+  editors             = ["group:{{ project_id }}-AccountMember@{{domain}}"]
+  viewers             = ["group:{{ project_id }}-AccountViewer@{{domain}}"]
+  {% endif %}
+  {% if lien_reason%}
+  lien_reason         = "{{ lien_reason}}"
+  {% endif %}
+}
