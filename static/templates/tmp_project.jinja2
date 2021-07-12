@@ -1,0 +1,43 @@
+module "{{ project_id }}" {
+
+  source              = "../terraform/modules/project-factory"
+  parent              = "folders/{{ folder_id }}"
+  name                = "{{ project_id }}"
+  {%if auto_create_network == true %}
+  auto_create_network =  true
+  {% endif %}
+  billing_account     = "{{ billing_account }}"
+  {% if account_groups == true %}
+  owners              = ["group:{{ project_id }}-AccountOwners@{{domain}}"]
+  editors             = ["group:{{ project_id }}-AccountMember@{{domain}}"]
+  viewers             = ["group:{{ project_id }}-AccountViewer@{{domain}}"]
+  {% endif %}
+  {% if lien_reason%}
+  lien_reason         = "{{ lien_reason}}"
+  {% endif %}
+}
+
+{% if service_group == true %}
+module "bind-service-groups-{{ project_id }}" {
+  source                 = "../modules/custom-service-roles"
+  project_id             = module.{{ project_id }}.project_id
+  computeadmins-group    = ["group:{{ project_id }}-ComputeAdministrators@{{ domain }}"]
+  computeoperators-group = ["group:{{ project_id }}-ComputeOperators@{{ domain }}"]
+  computemonitors-group  = ["group:{{ project_id }}-ComputeMonitors@{{ domain }}"]
+  storageadmins-group = ["group:{{ project_id}}-StorageAdministrators@@{{ domain }}"]
+  storageoperators-group = ["group:{{ project_id }}-StorageOperators@{{ domain }}"]
+  storagemonitors-group = ["group:{{ project_id}}-StorageMonitors@{{ domain }}"]
+  dbadmins-group = ["group:{{ project_id }}-DBAdministrators@{{ domain }}"]
+  dboperators-group =["group:{{ project_id}}-DBOperators@{{ domain }}"]
+  dbmonitors-group =["group:{{ project_id}}-DBMonitors@{{ domain }}}}"]
+}
+{% endif %}
+{% if amount %}
+module "budget-{{ project_id}}" {
+  source          = "../modules/project-budget"
+  create_budget   = true
+  billing_account = "{{ billing_account }}"
+  projects        = [module.{{ project_id }}.project_id]
+  amount          = "{{ amount }}"
+}
+{%endif%}
