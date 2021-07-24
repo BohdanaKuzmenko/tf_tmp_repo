@@ -1,0 +1,37 @@
+{%- if vpcx %}
+
+module "attach_svc_project-{{ project_id }}" {
+  source          = "git::https://sourcecode.jnj.com/scm/scmframework/iac_jnj_modules.git//terraform-gcp-shared-vpc-service"
+  host_project_id = "jjt-gcp"  {# # Static should not be changed #}
+  svc_project_id  = module.{{ project_id }}.project_id
+}
+
+{% for vpcx_item in vpcx %}
+module "create_svpc_subnet-{{ project_id }}-{{ vpcx_item.id }}" {
+  source             = "git::https://sourcecode.jnj.com/scm/scmframework/iac_jnj_modules.git//terraform-gcp-shared-vpc-subnet"
+  host_project_id    = "jjt-gcp"  {# # Static should not be changed #}
+  name               = "{{ project_id }}-subnetwork-{{ vpcx_item.id }}"
+  ip_cidr_range      = "{{ vpcx_item.region_subnet }}"
+  region             = "{{ vpcx_item.region }}"
+  network            = "jjt-connectivity" {# # Static should not be changed #}
+  secondary_ip_range = [
+    {%- if vpcx_item.secondary_ip_range %}
+    {%- for i in vpcx_item.secondary_ip_range %}
+    {
+      range_name     = "{{ i.range_name }}",
+      ip_cidr_range  = "{{i.ip_cidr_range}}"
+    }{%- if not loop.last %},{%- endif %}
+    {%- endfor %}
+    {%- endif %}
+  ]
+}
+
+module "add_subnet_member-{{ project_id }}-{{ vpcx_item.id }}" {
+  source           = "git::https://sourcecode.jnj.com/scm/scmframework/iac_jnj_modules.git//terraform-gcp-shared-vpc-member"
+  host_project_id  = "jjt-gcp"  {# # Static should not be changed #}
+  region           = "{{ vpcx_item.region }}"
+  subnet_name      = module.create_svpc_subnet-{{ project_id }}-{{ vpcx_item.id }}.name
+  members          = ["group:ITS-EP-APP-{{ project_id }}-AccountOwners@{{ domain }}"]
+}
+{% endfor %}
+{%- endif %}
