@@ -1,0 +1,9 @@
+{% if amount %}
+module "budget-{{ project_id}}" {
+  source          = "../modules/project-budget"
+  create_budget   = true
+  billing_account = "{{ billing_account }}"
+  projects        = [module.{{ project_id }}.project_id]
+  amount          = "{{ amount }}"
+}
+{%endif%}
