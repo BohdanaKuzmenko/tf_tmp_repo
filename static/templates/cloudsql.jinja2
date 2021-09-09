@@ -12,7 +12,7 @@ module "{{ name }}" {
 
   source = "git::https://github.com/pcln/terraform-gcp-cloudsql.git//modules/mysql"
 
-  name                = "master-{{ name }}"
+  name                = "{{ name }}-master"
   database_version    = "{{ version }}"
   team                = "data_eng"
   deletion_protection = true
@@ -23,13 +23,13 @@ module "{{ name }}" {
     availability_type    = "ZONAL"
     ip_configuration     = { ipv4_enabled = false }
     backup_configuration = { enabled = true, binary_log_enabled = true, start_time = "20:55" }
-    location_preference  = { zone = "us-east4-a" }
+    location_preference  = { zone = "{{zone|default('us-east4-a')}}" }
     database_flags       = local.database_flags
   }
 {% if ha == true %}
   read_replicas = [
 {% for zone in ha_zones %}
-    { name                         = "read-relica-{{loop.index0}}"
+    { name                         = "{{name}}-read-relica-{{loop.index0}}"
       region                       = var.region
       deletion_protection_replicas = true
       settings = {
