@@ -23,7 +23,7 @@ module "{{ name }}" {
     availability_type    = "ZONAL"
     ip_configuration     = { ipv4_enabled = false }
     backup_configuration = { enabled = true, binary_log_enabled = true, start_time = "20:55" }
-    location_preference  = { zone = "{{ zone or 'us-east4-a' }}" }
+    location_preference  = { zone = "{{ zone|default('', true) }}" }
     database_flags       = local.database_flags
   }
 {% if ha == true %}
